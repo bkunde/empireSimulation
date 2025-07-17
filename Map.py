@@ -8,6 +8,9 @@ import BasicTiles
 class Map:
     def __init__(self):
         self.wheatTiles = self.getWheatTiles() 
+        self.waterTiles = []
+        self.grassTiles = []
+        self.mountainTiles = []
 
     def update(self):
         self.checkWheat()
@@ -27,6 +30,29 @@ class Map:
                     wheat.append(tile)
 
         return wheat
+
+    def calculateFertility(self):
+        fullyFertile = set()
+        partiallyFertile = set()
+        for tile in self.waterTiles:
+            neighbors = self.getNeighbors(tile)
+            for n in neighbors: 
+                if n.tile_type.name == 'grass':
+                    fullyFertile.add(n)
+
+        for tile in fullyFertile:
+            neighbors = self.getNeighbors(tile)
+            for n in neighbors: 
+                if n.tile_type.name == 'grass' and n not in fullyFertile:
+                    partiallyFertile.add(n)
+
+        for tile in fullyFertile:
+            tile.tile_type.fertility = 100.0
+            tile.color = (20,84,20)
+
+        for tile in partiallyFertile:
+            tile.tile_type.fertility = 50.0
+            tile.color = (20,105,20)
 
     def getNeighbors(self, tile):
         neighbors = []
@@ -59,8 +85,9 @@ class Map:
                     frontier.append(neighbor)
 
             for tile in lake_tiles:
-                waterTile = BasicTiles.Water(tile.q, tile.r, 'water', 'lake', passable=False)
+                waterTile = BasicTiles.Water(tile.q, tile.r, 'water', (2,64,255), 'lake', passable=False)
                 tile.setTile(waterTile)
+                self.waterTiles.append(tile)
                 
     
     def generateRivers(self, start_tile, max_length=20):
@@ -79,40 +106,40 @@ class Map:
             current = next_tile
             
         for tile in path:
-            waterTile = BasicTiles.Water(tile.q, tile.r, 'water', 'river',  passable=False)
+            waterTile = BasicTiles.Water(tile.q, tile.r, 'water', (2,117,255), 'river',  passable=False)
             tile.setTile(waterTile)
-            
-            
-                
+            self.waterTiles.append(tile)
 
+            
     def generateMap(self, seed=None):
         if seed is not None:
             random.seed(seed)
 
-        waterTiles = []
-        grassTiles = []
-        mountainTiles = []
+        self.waterTiles = []
+        self.grassTiles = []
+        self.mountainTiles = []
         terrains = ['grass', 'water', 'mountain']
         for row in settings.HEX_MAP.tiles:
             for tile in row:
                 terrain = random.choices(terrains, weights=[0.9,0.0,0.1],k=1)[0]
                 if terrain == 'grass': 
-                    tileType = BasicTiles.Grass(tile.q, tile.r, terrain)
-                    grassTiles.append(tile)
+                    tileType = BasicTiles.Grass(tile.q, tile.r, terrain, (34,139,34))
+                    self.grassTiles.append(tile)
                 #elif terrain == 'water': tileType = BasicTiles.Water(tile.q, tile.r, terrain, passable=False)
                 elif terrain == 'mountain': 
-                    tileType = BasicTiles.Mountain(tile.q, tile.r, terrain, passable=False)
-                    mountainTiles.append(tile)
+                    tileType = BasicTiles.Mountain(tile.q, tile.r, terrain, (105,105,105), passable=False)
+                    self.mountainTiles.append(tile)
                 else:
-                    tileType=BasicTiles.Barren(tile.q, tile.r, 'barren')
+                    tileType=BasicTiles.Barren(tile.q, tile.r, 'barren', (64,48,38))
 
                 tile.setTile(tileType)
                 
                 
-        for i in range(random.randint(1, 5)):
-            self.generateRivers(random.choice(mountainTiles), max_length=20)
+        for i in range(random.randint(0, 6)):
+            self.generateRivers(random.choice(self.mountainTiles), max_length=20)
+            self.generateLakes(count=random.randint(0,5), lake_size=random.randint(5,10))
 
-        self.generateLakes(count=random.randint(2,8), lake_size=random.randint(3,10))
+        self.calculateFertility()
 
 
         

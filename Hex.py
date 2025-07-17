@@ -12,10 +12,10 @@ class HexTile:
         self.r = r
         self.size = size
         self.tile_type = tile_type
-        self.color = self.get_color()
-        
+        self.color = None
         self.pixelX = 0
         self.pixelY = 0
+        self.highlighted = False
 
     def get_color(self):
         match self.tile_type.name:
@@ -32,7 +32,7 @@ class HexTile:
 
     def setTile(self, tile):
         self.tile_type = tile
-        self.color = self.get_color()
+        self.color = tile.color #self.get_color()
 
 
     def get_hex_points(self):
@@ -48,10 +48,16 @@ class HexTile:
     def draw(self):
         points = self.get_hex_points()
         pygame.draw.polygon(settings.SCREEN, self.color, points) #fill
-        pygame.draw.polygon(settings.SCREEN, (0,0,0), points, 1) #border
+        if self.highlighted:
+            pygame.draw.polygon(settings.SCREEN, (255,0,190), points, 3) #border
+        else:
+            pygame.draw.polygon(settings.SCREEN, (0,0,0), points, 1) #border
 
     def __str__(self):
-        return f"<Hex at {(self.q, self.r)}, Tile = {self.tile_type.name})"
+        if self.tile_type.name == 'grass' or self.tile_type.name == 'wheat':
+            return f"<Hex at {(self.q, self.r)}, Tile = {self.tile_type.name}, Fertility = {self.tile_type.fertility}>"
+        else:
+            return f"<Hex at {(self.q, self.r)}, Tile = {self.tile_type.name}>" 
 
 class HexMap:
     #map is a grid of hex tiles
@@ -64,7 +70,7 @@ class HexMap:
             self.tiles[i] = [None]*((2*self.max_radius+1) - abs(self.max_radius-i))
 
         for q, r in generate_hex_grid(self.max_radius):
-            grassTile = BasicTiles.Grass(q, r, 'grass')
+            grassTile = BasicTiles.Grass(q, r, 'grass', (0,0,0))
             tile = HexTile(q, r, size, tile_type = grassTile)
             tile.pixelX, tile.pixelY = axial_to_pixel(q, r, size)
             self.tiles[r][q - max(0, self.max_radius-r)] = tile

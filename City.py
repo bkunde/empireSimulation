@@ -6,7 +6,7 @@ import Citizen
 
 class City(Tile):
     def __init__(self, q, r, name, country=None):
-        super().__init__(q, r, name)
+        super().__init__(q, r, name, country.color)
         self.country = country
         self.citizens = []
         self.growAmount = 2
