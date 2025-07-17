@@ -21,8 +21,8 @@ def Main():
     
     empire = Empire.Empire(color=(240,233,27))
     #create a start city
-    city = City.City(12, 12, 'city', empire)
-    settings.HEX_MAP.tiles[city.q][city.r].setTile(city)
+    #city = City.City(12, 12, 'city', empire)
+    #settings.HEX_MAP.tiles[city.q][city.r].setTile(city)
 
     #print(settings.HEX_MAP.tiles[x].q, settings.HEX_MAP.tiles[x].r)
 
@@ -47,10 +47,10 @@ def Main():
         
         #RENDER SIMULATION
         #Update Phase
-        for citizen in city.citizens:
-            citizen.update()
+        #for citizen in city.citizens:
+        #    citizen.update()
 
-        city.update()
+        #city.update()
         mapcreator.update()
 
         #Draw Phase
@@ -58,8 +58,8 @@ def Main():
         settings.HEX_MAP.draw()
         
         #for citizen in country.citizens:
-        for citizen in city.citizens:
-            citizen.Draw()
+        #for citizen in city.citizens:
+            #citizen.Draw()
         
         ###DEBUG###
         if settings.DEBUG:

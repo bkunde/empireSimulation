@@ -64,16 +64,35 @@ class HexMap:
     #using an axial coordinate system where s = -q-r
     def __init__(self, size=30):
         self.max_radius = 12
-        self.tiles = [[None]]*(self.max_radius*2+1)
-    
+        self.map_width = settings.WIDTH // int(size*1.5)
+        self.map_height = settings.HEIGHT // int(size * (3**0.5))
+        
+        self.tiles = []
+        for r in range(self.map_height):
+            row = []
+            for q in range(self.map_width):
+                axial_q = q - (r // 2)
+                defaultTile = BasicTiles.Barren(axial_q, r, 'barren', (0,0,0))
+                tile = HexTile(axial_q, r, size, tile_type = defaultTile)
+                tile.pixelX, tile.pixelY = axial_to_pixel(axial_q, r, size)
+                row.append(tile)
+            self.tiles.append(row)
+                
+        
+        #self.tiles = [None for _ in range(self.max_radius * 2 +1)] #[[None]]*(self.max_radius*2+1)
+        """    
         for i in range(len(self.tiles)):
             self.tiles[i] = [None]*((2*self.max_radius+1) - abs(self.max_radius-i))
 
-        for q, r in generate_hex_grid(self.max_radius):
-            grassTile = BasicTiles.Grass(q, r, 'grass', (0,0,0))
-            tile = HexTile(q, r, size, tile_type = grassTile)
+        for q, r in generate_hex_grid_rectangle():#generate_hex_grid_hexagon(self.max_radius):
+            defaultTile = BasicTiles.Barren(q, r, 'barren', (0,0,0))
+            
+            tile = HexTile(q, r, size, tile_type = defaultTile)
             tile.pixelX, tile.pixelY = axial_to_pixel(q, r, size)
+            self.tiles[0].append(tile)
             self.tiles[r][q - max(0, self.max_radius-r)] = tile
+            """
+            
 
     def draw(self):
         for row in self.tiles:
@@ -88,14 +107,25 @@ class HexMap:
 
 
 HEX_DIRECTIONS = [ (1,0), (1,-1), (0,-1), (-1,0), (-1,1), (0,1) ]
+
+#directions in e, ne, nw, w, sw, se
+EVEN_R_OFFSETS = {
+    0: [(1,0), (0,-1), (-1,-1), (-1,0), (-1,1), (0,1)], #even rows
+    1: [(1,0), (1,-1), (0,-1), (-1,0), (0,1), (1,1)]    #odd rows
+}
 #start hex starts in center of the screen
 START_HEX_PIXEL = settings.WIDTH // 2, settings.HEIGHT // 2
 
 def hex_neighbor(q, r, direction):
+    parity = r % 2
+    dq, dr = EVEN_R_OFFSETS[parity][direction]
+    return (q + dq, r+dr)
+    """
     dq, dr = HEX_DIRECTIONS[direction]   
     return (q + dq, r+dr)
+    """
 
-def generate_hex_grid(max_radius):
+def generate_hex_grid_hexagon(max_radius):
     tiles = [(max_radius, max_radius)] #start with (q,r) in the center
     
     for radius in range(1, max_radius+1):
@@ -138,7 +168,7 @@ def generate_hex_spiral(size):
 
 def axial_to_pixel(q, r, size):
     #convert axial coords to pixel coords
-    x = (math.sqrt(3) * q + math.sqrt(3)/2 * r) 
+    x = math.sqrt(3) * q + (math.sqrt(3)/2 * r) 
     y = (3/2 * r) 
     
     #scale cartesian coords
