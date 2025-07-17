@@ -13,7 +13,7 @@ def Main():
     dt = 0
     lastMapUpdate = 0
     cooldown = 0.3
-
+	
     #create citizens, will probably be moved to its own file
     #for i in range(5):
         #country.createCitizens()
@@ -31,6 +31,7 @@ def Main():
     mapcreator = Map.Map()
     seed=random.randint(0,10000)
     mapcreator.generateMap(seed=seed)
+    prevSeed = seed
 
     while running:
         keys = pygame.key.get_pressed()
@@ -41,12 +42,13 @@ def Main():
                 settings.DEBUG = not(settings.DEBUG) #toggle debug mode 
 
             now = time.time()
-            if keys[pygame.K_UP] and now - lastMapUpdate > cooldown:
+            if keys[pygame.K_RIGHT] and now - lastMapUpdate > cooldown:
+                prevSeed = seed
                 seed += random.randint(2, 1000)
                 mapcreator.generateMap(seed)
                 lastMapUpdate = now
-            if keys[pygame.K_DOWN] and now - lastMapUpdate > cooldown:
-                seed -= random.randint(2, 1000)
+            if keys[pygame.K_LEFT] and now - lastMapUpdate > cooldown:
+                seed = prevSeed
                 mapcreator.generateMap(seed)
                 lastMapUpdate = now
         

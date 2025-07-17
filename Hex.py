@@ -18,6 +18,7 @@ class HexTile:
         self.highlighted = False
 
     def get_color(self):
+        """
         match self.tile_type.name:
             case "grass": return (34,139,34)
             case "water": 
@@ -28,7 +29,7 @@ class HexTile:
             case "city": return (255,0,0) #self.tile_type.color
             case "barren": return(64,48,38)
             case _: return (200,200,200)
-            
+        """ 
 
     def setTile(self, tile):
         self.tile_type = tile
@@ -65,16 +66,14 @@ class HexMap:
     def __init__(self, size=30):
         self.max_radius = 12
 
-        self.map_width = (settings.WIDTH // (int(size*1.5)-size))//2
-        self.map_height = (settings.HEIGHT // (int(size * (3**0.5))-size))//2
-        print(self.map_width)
-        print(self.map_height)
+        self.map_width = int(settings.WIDTH // (math.sqrt(3) * size)) #cols
+        self.map_height = int(settings.HEIGHT // ((2 * size) * (0.75))) #rows
         
         self.tiles = []#[[None for _ in range(self.map_height)] for _ in range(self.map_width)]
         for r in range(self.map_height):
             row = []
             for q in range(self.map_width):
-                axial_q = q - (r//2)#+ math.floor(r/2)
+                axial_q = q - (r//2)
                 
                 defaultTile = BasicTiles.Barren(axial_q, r, 'barren', (0,0,0))
                 tile = HexTile(axial_q, r, size, tile_type = defaultTile)
@@ -188,10 +187,11 @@ def axial_to_pixel(q, r, size):
 
 def pixel_to_axial(point, size=10): #point = pygame.Vector2
     #invert scaling
-    x = point.x / size
-    y = point.y / size
-    #x = x / size
-    #y = y / size
+    x = point.x - size
+    y = point.y - size
+
+    x = x / size
+    y = y / size
 
     #cartesian to hex
     q = math.sqrt(3)/3 * x - (1/3) * y
