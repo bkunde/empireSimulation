@@ -64,20 +64,23 @@ class HexMap:
     #using an axial coordinate system where s = -q-r
     def __init__(self, size=30):
         self.max_radius = 12
-        self.map_width = settings.WIDTH // int(size*1.5)
-        self.map_height = settings.HEIGHT // int(size * (3**0.5))
+
+        self.map_width = (settings.WIDTH // (int(size*1.5)-size))//2
+        self.map_height = (settings.HEIGHT // (int(size * (3**0.5))-size))//2
+        print(self.map_width)
+        print(self.map_height)
         
-        self.tiles = []
+        self.tiles = []#[[None for _ in range(self.map_height)] for _ in range(self.map_width)]
         for r in range(self.map_height):
             row = []
             for q in range(self.map_width):
-                axial_q = q - (r // 2)
+                axial_q = q - (r//2)#+ math.floor(r/2)
+                
                 defaultTile = BasicTiles.Barren(axial_q, r, 'barren', (0,0,0))
                 tile = HexTile(axial_q, r, size, tile_type = defaultTile)
                 tile.pixelX, tile.pixelY = axial_to_pixel(axial_q, r, size)
                 row.append(tile)
             self.tiles.append(row)
-                
         
         #self.tiles = [None for _ in range(self.max_radius * 2 +1)] #[[None]]*(self.max_radius*2+1)
         """    
@@ -109,7 +112,7 @@ class HexMap:
 HEX_DIRECTIONS = [ (1,0), (1,-1), (0,-1), (-1,0), (-1,1), (0,1) ]
 
 #directions in e, ne, nw, w, sw, se
-EVEN_R_OFFSETS = {
+ODD_R_OFFSETS = {
     0: [(1,0), (0,-1), (-1,-1), (-1,0), (-1,1), (0,1)], #even rows
     1: [(1,0), (1,-1), (0,-1), (-1,0), (0,1), (1,1)]    #odd rows
 }
@@ -118,7 +121,7 @@ START_HEX_PIXEL = settings.WIDTH // 2, settings.HEIGHT // 2
 
 def hex_neighbor(q, r, direction):
     parity = r % 2
-    dq, dr = EVEN_R_OFFSETS[parity][direction]
+    dq, dr = ODD_R_OFFSETS[parity][direction]
     return (q + dq, r+dr)
     """
     dq, dr = HEX_DIRECTIONS[direction]   
@@ -174,6 +177,9 @@ def axial_to_pixel(q, r, size):
     #scale cartesian coords
     x = (x) * size
     y = (y) * size
+    
+    x+=size
+    y+=size
 
     #adjust to center on screen
     #x += settings.WIDTH//2-size
