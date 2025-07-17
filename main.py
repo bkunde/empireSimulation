@@ -1,7 +1,7 @@
 #Brevin Kunde 7/1/25
 
 import pygame
-import random
+import random, time
 import settings, Debugger
 import Citizen, Empire, Hex, City, Resource, Map
 
@@ -11,6 +11,8 @@ def Main():
     clock = pygame.time.Clock()
     running = True
     dt = 0
+    lastMapUpdate = 0
+    cooldown = 0.3
 
     #create citizens, will probably be moved to its own file
     #for i in range(5):
@@ -38,12 +40,15 @@ def Main():
             if keys[pygame.K_b]:
                 settings.DEBUG = not(settings.DEBUG) #toggle debug mode 
 
-            if keys[pygame.K_UP]:
+            now = time.time()
+            if keys[pygame.K_UP] and now - lastMapUpdate > cooldown:
                 seed += random.randint(2, 1000)
                 mapcreator.generateMap(seed)
-            if keys[pygame.K_DOWN]:
+                lastMapUpdate = now
+            if keys[pygame.K_DOWN] and now - lastMapUpdate > cooldown:
                 seed -= random.randint(2, 1000)
                 mapcreator.generateMap(seed)
+                lastMapUpdate = now
         
         #RENDER SIMULATION
         #Update Phase
