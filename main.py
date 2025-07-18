@@ -21,17 +21,28 @@ def Main():
     settings.HEX_MAP = Hex.HexMap(size=10)
     #print(settings.HEX_MAP)
     
+    """
     empire = Empire.Empire(color=(240,233,27))
+    empire2 = Empire.Empire(color=(255,0,0))
     #create a start city
-    #city = City.City(12, 12, 'city', empire)
-    #settings.HEX_MAP.tiles[city.q][city.r].setTile(city)
+    city = City.City(20, 11, 'city', empire)
+    city2 = City.City(20, 11, 'city', empire2)
+    hex_tile = settings.HEX_MAP.getTile(city.q, city.r)
+    if hex_tile:
+        hex_tile.setTile(city)
+        neighbors = Hex.get_neighbors(hex_tile.q, hex_tile.r)
+        for n in neighbors:
+            n.setTile(city2)  
 
     #print(settings.HEX_MAP.tiles[x].q, settings.HEX_MAP.tiles[x].r)
+    """
 
     mapcreator = Map.Map()
     seed=random.randint(0,10000)
     mapcreator.generateMap(seed=seed)
     prevSeed = seed
+
+        
 
     while running:
         keys = pygame.key.get_pressed()

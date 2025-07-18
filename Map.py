@@ -35,13 +35,13 @@ class Map:
         fullyFertile = set()
         partiallyFertile = set()
         for tile in self.waterTiles:
-            neighbors = self.getNeighbors(tile)
+            neighbors = Hex.get_neighbors(tile.q, tile.r)
             for n in neighbors: 
                 if n.tile_type.name == 'grass':
                     fullyFertile.add(n)
 
         for tile in fullyFertile:
-            neighbors = self.getNeighbors(tile)
+            neighbors = Hex.get_neighbors(tile.q, tile.r)
             for n in neighbors: 
                 if n.tile_type.name == 'grass' and n not in fullyFertile:
                     partiallyFertile.add(n)
@@ -54,6 +54,7 @@ class Map:
             tile.tile_type.fertility = 50.0
             tile.color = (20,105,20)
 
+    """
     def getNeighbors(self, tile):
         neighbors = []
         for i in range(6):
@@ -63,6 +64,7 @@ class Map:
                 neighbors.append(settings.HEX_MAP.tiles[r][q])
 
         return neighbors
+        """
             
                     
     def generateLakes(self, count=5, lake_size=6):
@@ -76,7 +78,7 @@ class Map:
             frontier = [center]
             while len(lake_tiles) < lake_size and frontier:
                 tile = frontier.pop()
-                neighbors = self.getNeighbors(tile)
+                neighbors = Hex.get_neighbors(tile.q, tile.r)
                 random.shuffle(neighbors)
                 for neighbor in neighbors:
                     if len(lake_tiles) >= lake_size:
@@ -95,7 +97,7 @@ class Map:
         path = [current]
         
         for i in range(max_length):
-            neighbors = self.getNeighbors(current)
+            neighbors = Hex.get_neighbors(current.q, current.r)
             grass_neighbors = [n for n in neighbors if n.tile_type.name == 'grass']
             if not grass_neighbors:
                 break

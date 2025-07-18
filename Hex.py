@@ -12,7 +12,7 @@ class HexTile:
         self.r = r
         self.size = size
         self.tile_type = tile_type
-        self.color = None
+        self.color = (200,200,200)
         self.pixelX = 0
         self.pixelY = 0
         self.highlighted = False
@@ -67,19 +67,17 @@ class HexMap:
         self.max_radius = 12
 
         self.map_width = int(settings.WIDTH // (math.sqrt(3) * size)) #cols
-        self.map_height = int(settings.HEIGHT // ((2 * size) * (0.75))) #rows
+        self.map_height = int(settings.HEIGHT // (1.5 * size))        #rows
         
-        self.tiles = []#[[None for _ in range(self.map_height)] for _ in range(self.map_width)]
+        self.tiles = [[None for _ in range(self.map_width)] for _ in range(self.map_height)]
         for r in range(self.map_height):
-            row = []
-            for q in range(self.map_width):
-                axial_q = q - (r//2)
-                
-                defaultTile = BasicTiles.Barren(axial_q, r, 'barren', (0,0,0))
-                tile = HexTile(axial_q, r, size, tile_type = defaultTile)
-                tile.pixelX, tile.pixelY = axial_to_pixel(axial_q, r, size)
-                row.append(tile)
-            self.tiles.append(row)
+            row_offset = r//2
+            for col in range(self.map_width):
+                q = col - row_offset
+                defaultTile = BasicTiles.Barren(q, r, 'barren', (0,0,0))
+                tile = HexTile(q, r, size, tile_type = defaultTile)
+                tile.pixelX, tile.pixelY = axial_to_pixel(q, r, size)
+                self.tiles[r][col] = tile
         
         #self.tiles = [None for _ in range(self.max_radius * 2 +1)] #[[None]]*(self.max_radius*2+1)
         """    
@@ -95,6 +93,12 @@ class HexMap:
             self.tiles[r][q - max(0, self.max_radius-r)] = tile
             """
             
+
+    def getTile(self, q, r):
+        col = q + (r // 2)
+        if 0 <= r < self.map_height and 0 <= col < self.map_width:
+            return self.tiles[r][col]
+        return None
 
     def draw(self):
         for row in self.tiles:
@@ -118,6 +122,7 @@ ODD_R_OFFSETS = {
 #start hex starts in center of the screen
 START_HEX_PIXEL = settings.WIDTH // 2, settings.HEIGHT // 2
 
+#returns a single tile based on direction
 def hex_neighbor(q, r, direction):
     parity = r % 2
     dq, dr = ODD_R_OFFSETS[parity][direction]
@@ -126,6 +131,16 @@ def hex_neighbor(q, r, direction):
     dq, dr = HEX_DIRECTIONS[direction]   
     return (q + dq, r+dr)
     """
+    
+#returns a list of all neighbor tiles
+def get_neighbors(q, r):
+    neighbors = []
+    for dq, dr in HEX_DIRECTIONS:
+        nq, nr = q+dq, r+dr
+        neighbor_tile = settings.HEX_MAP.getTile(nq, nr)
+        if neighbor_tile:
+            neighbors.append(neighbor_tile)
+    return neighbors
 
 def generate_hex_grid_hexagon(max_radius):
     tiles = [(max_radius, max_radius)] #start with (q,r) in the center
@@ -138,35 +153,6 @@ def generate_hex_grid_hexagon(max_radius):
                 q,r = hex_neighbor(q,r,i)
                 tiles.append((q,r))
     return tiles
-        
-def generate_hex_spiral(size):
-    centerX = settings.WIDTH // 2
-    centerY = settings.HEIGHT // 2
-    seen = set()
-    tiles = [] 
-
-    max_radius = 50
-
-    for radius in range(max_radius):
-        if radius == 0:
-            q, r  = 0, 0 
-            x, y = axial_to_pixel(q, r, size, centerX, centerY)
-            if 0 <= x <= settings.WIDTH and 0 <= y <= settings.HEIGHT:
-                tiles.append((q,r))
-
-        else:
-            q, r = -radius, radius
-            for i in range(6):
-                for j in range(radius):
-                    if (q,r) not in seen:
-                        x, y = axial_to_pixel(q, r, size, centerX, centerY)
-                        if 0 <= x <= settings.WIDTH and 0 <= y <= settings.HEIGHT:
-                            tiles.append((q,r))
-                            seen.add((q,r))
-                    q, r = hex_neighbor(q, r, i)
-
-    return tiles
-
 
 def axial_to_pixel(q, r, size):
     #convert axial coords to pixel coords
