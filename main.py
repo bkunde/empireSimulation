@@ -14,34 +14,22 @@ def Main():
     lastMapUpdate = 0
     cooldown = 0.3
 	
-    #create citizens, will probably be moved to its own file
-    #for i in range(5):
-        #country.createCitizens()
-
     settings.HEX_MAP = Hex.HexMap(size=10)
-    #print(settings.HEX_MAP)
     
-    """
-    empire = Empire.Empire(color=(240,233,27))
-    empire2 = Empire.Empire(color=(255,0,0))
-    #create a start city
-    city = City.City(20, 11, 'city', empire)
-    city2 = City.City(20, 11, 'city', empire2)
-    hex_tile = settings.HEX_MAP.getTile(city.q, city.r)
-    if hex_tile:
-        hex_tile.setTile(city)
-        neighbors = Hex.get_neighbors(hex_tile.q, hex_tile.r)
-        for n in neighbors:
-            n.setTile(city2)  
-
     #print(settings.HEX_MAP.tiles[x].q, settings.HEX_MAP.tiles[x].r)
-    """
 
+    #create and draw map
     mapcreator = Map.Map()
     seed=random.randint(0,10000)
     mapcreator.generateMap(seed=seed)
     prevSeed = seed
 
+    #create a start city
+    empire = Empire.Empire(color=(255,0,0))
+    city = City.City(20, 11, 'city', empire)
+    hex_tile = settings.HEX_MAP.getTile(city.q, city.r)
+    if hex_tile:
+        hex_tile.setTile(city)
         
 
     while running:
@@ -57,18 +45,22 @@ def Main():
                 prevSeed = seed
                 seed += random.randint(2, 1000)
                 mapcreator.generateMap(seed)
+                if hex_tile:
+                    hex_tile.setTile(city)
                 lastMapUpdate = now
             if keys[pygame.K_LEFT] and now - lastMapUpdate > cooldown:
                 seed = prevSeed
                 mapcreator.generateMap(seed)
+                if hex_tile:
+                    hex_tile.setTile(city)
                 lastMapUpdate = now
         
-        #RENDER SIMULATION
+        ###RENDER SIMULATION###
         #Update Phase
-        #for citizen in city.citizens:
-        #    citizen.update()
+        for citizen in city.citizens:
+            citizen.update()
 
-        #city.update()
+        city.update()
         mapcreator.update()
 
         #Draw Phase
@@ -76,8 +68,8 @@ def Main():
         settings.HEX_MAP.draw()
         
         #for citizen in country.citizens:
-        #for citizen in city.citizens:
-            #citizen.Draw()
+        for citizen in city.citizens:
+            citizen.Draw()
         
         ###DEBUG###
         if settings.DEBUG:

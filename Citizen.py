@@ -3,6 +3,7 @@
 import pygame
 import settings
 import Hex
+import Resource
 import Astar
 
 class Citizen:
@@ -30,7 +31,6 @@ Each citizen is represented as a circle of a specific countries color
         self.goal_tile = None 
             
     def update(self):
-        
         if self.state == "to_work":
             if not self.goal_tile:
                 self.state = "idle"
@@ -78,6 +78,23 @@ Each citizen is represented as a circle of a specific countries color
             self.goal_tile.tile_type.claimed_by.remove(self)
 
     def Work(self):
+        if self.occupation == 'farmer':
+            if self.goal_tile.tile_type.name == 'wheat':
+                self.Harvest()
+
+            self.Plant()
+
+
+    def Plant(self):
+        self.release_claim()
+
+        print('planting')
+        color = (241, 231, 52)
+        amount = 6*(self.goal_tile.tile_type.fertility /100) 
+        self.goal_tile.setTile(Resource.Resource(self.goal_tile.q ,self.goal_tile.r, 'wheat',color, amount))
+        
+    
+    def Harvest(self):
         #harvest tile
         self.release_claim()
         self.goal_tile.tile_type.harvest() 
@@ -85,7 +102,8 @@ Each citizen is represented as a circle of a specific countries color
     
     def getGoal(self):
         if self.occupation == "farmer": 
-            valid_tiles = []
+            valid_harvest_tiles = []
+            valid_plant_tiles = []
 
             for row in settings.HEX_MAP.tiles:
                 for tile in row:
@@ -94,12 +112,20 @@ Each citizen is represented as a circle of a specific countries color
                        and tile.tile_type.amount > 0 
                        and len(tile.tile_type.claimed_by) < 1
                     ):
-                        valid_tiles.append(tile)
+                        valid_harvest_tiles.append(tile)
 
-            if not valid_tiles:
+                    if (
+                       tile.tile_type.name == 'grass'
+                       and tile.tile_type.fertility > 0
+                       and len(tile.tile_type.claimed_by) < 1
+                    ):
+                        valid_plant_tiles.append(tile)
+
+            if not valid_harvest_tiles and not valid_plant_tiles:
                 return None
 
             #sort tiles by distance to current tile
+            valid_tiles = valid_harvest_tiles + valid_plant_tiles
             valid_tiles.sort(key=lambda t: Hex.axial_distance(self.current_tile, t))
             
             chosen_tile = valid_tiles[0]            
